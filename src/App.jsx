@@ -87,10 +87,6 @@ const App = () => {
 
   const personsToShow = persons.filter(x => x.name.toLowerCase().includes(filter))
 
-  const GetId = () => {
-    return persons.length
-  }
-
   const handleNameChange = (event) =>{
     setNewName(event.target.value)
   }
@@ -113,15 +109,15 @@ const App = () => {
     if(index >= 0){
       if(confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
         const newItem = {
-          id : Number.parseInt(persons[index].id),
+          id : persons[index].id,
           name: newName,
           number: newNumber
         }
         const updatedPersons = persons.filter(x => x.name !== newName).concat(newItem)        
-        setPersons(updatedPersons)
         personService
         .update(persons[index].id, newItem)
         .then(() => {
+          setPersons(updatedPersons)
           setMessage(`Updated ${newName}`)
           setTimeout(() => {
             setMessage(null)
@@ -131,23 +127,31 @@ const App = () => {
           setError(`Information of ${newName} has already been removed from server`)
           setTimeout(() => {
             setMessage(null)
-          }, 500);
+          }, 1000);
         })
       }
       return
     }
     const newPerson = {
-      id: GetId(),
       name: newName,
       number: newNumber
     }
-    personService.create(newPerson)
-    const updatedPersons = persons.concat(newPerson)
-    setPersons(updatedPersons)
-    setMessage(`Added ${newName}`)
-    setTimeout(() => {
-      setMessage(null)
-    }, 500);
+    personService
+    .create(newPerson)
+    .then(() => {
+      const updatedPersons = persons.concat(newPerson)
+      setPersons(updatedPersons)
+      setMessage(`Added ${newName}`)
+      setTimeout(() => {
+        setMessage(null)
+      }, 1000)
+    })
+    .catch(error => {
+      setError(error.message)
+      setTimeout(() => {
+        setError(null)
+      }, 1000);
+    }) 
   }
 
   const handleFilterChange = (event) => {
